@@ -9,7 +9,7 @@ export default class Cinematic extends Sprite {
         this.cooldown = 0;
         this.timer = 0;
         this.frameNumber = 0;
-        // this.nextDirection = '';
+        this.nextDirection = '';
     }
 
     start (name) {

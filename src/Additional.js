@@ -1,4 +1,4 @@
-export default function haveCollision (a, b) {
+export function haveCollision (a, b) {
     const aPoints = [
         { x: a.x, y: a.y },
         { x: a.x + a.width, y: a.y },
@@ -27,3 +27,9 @@ export default function haveCollision (a, b) {
 
     return false;
 };
+
+export function getRandomFrom (array) {
+    const index = Math.floor(Math.random() * array.length)
+
+    return array[index];
+}

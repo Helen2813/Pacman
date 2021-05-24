@@ -2,10 +2,11 @@ import Game from './Game.js'
 import Sprite from './Sprite.js'
 import { loadImage, loadJSON } from "./Loader.js";
 import Cinematic from "./Cinematic.js";
-import haveCollision from './Additional.js';
+import { getRandomFrom, haveCollision } from './Additional.js';
 import DisplayObject from "./DisplayObject.js";
 
 const scale = 2;
+const diractions = ['left', 'right', 'up', 'down'];
 
 export default async function main () {
     const game = new Game({
@@ -61,7 +62,8 @@ export default async function main () {
                 height: 13 * scale,
                 animations: atlas[`${color}Ghost`],
             })
-            ghost.start(atlas.position[color].direction)
+            ghost.start(atlas.position[color].direction);
+            ghost.nextDirection = atlas.position[color].direction;
 
             return ghost;
         })
@@ -93,11 +95,26 @@ export default async function main () {
         foods = foods.filter(food => !eated.includes(food));
 
         changeDirection(pacman);
+        ghosts.forEach(changeDirection);
+
+        for (const ghost of ghosts) {
+            const wall = getWallCollision(ghost.getNextposition());
+
+            if (wall) {
+                ghost.speedX = 0;
+                ghost.speedY = 0;
+            }
+
+            if (ghost.speedX === 0 && ghost.speedY === 0) {
+                const posibleDirections = diractions.filter(direction => direction !== ghost.animation.name);
+                ghost.nextDirection = getRandomFrom(posibleDirections);
+            }
+        }
 
         const wall = getWallCollision(pacman.getNextposition());
 
         if (wall) {
-            pacman.start(`whait${pacman.animation.name}`);
+            pacman.start(`wait${pacman.animation.name}`);
             pacman.speedX = 0;
             pacman.speedY = 0;
         }
@@ -123,6 +140,8 @@ export default async function main () {
     }
 
     function changeDirection (sprite) {
+        if (!sprite.nextDirection) return;
+
         if (sprite.nextDirection === 'up') {
             sprite.y -= 10;
             if (!getWallCollision(sprite)) {
