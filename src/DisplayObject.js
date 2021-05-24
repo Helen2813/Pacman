@@ -6,9 +6,23 @@ export default class DisplayObject {
 
         this.width = props.width || 10
         this.height = props.height || 10
+
+        this.debug = props.debug ?? false
     }
 
-    draw () {}
+    draw (context) {
+        if (this.debug) {
+            context.beginPath()
+            context.rect(this.x, this.y, this.width, this.height)
+            context.fillStyle = 'rgba(0, 255, 0, 0.3)'
+            context.fill()
+
+            context.beginPath()
+            context.rect(this.x, this.y, this.width, this.height)
+            context.strokeStyle = 'green'
+            context.stroke()
+        }
+    }
 
     update () {
 

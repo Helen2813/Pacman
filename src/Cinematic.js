@@ -9,6 +9,7 @@ export default class Cinematic extends Sprite {
         this.cooldown = 0;
         this.timer = 0;
         this.frameNumber = 0;
+        // this.nextDirection = '';
     }
 
     start (name) {
@@ -25,6 +26,8 @@ export default class Cinematic extends Sprite {
     }
 
     update (delta) {
+        super.update(delta)
+
         this.timer += delta
 
         if (this.timer >= this.cooldown) {

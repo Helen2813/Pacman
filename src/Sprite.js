@@ -6,7 +6,23 @@ export default class Sprite extends DisplayObject {
 
         this.image = props.image ?? null
         this.frame = props.frame ?? null
-        this.debug = props.debug ?? true
+
+        this.speedX = props.speedX ?? 0
+        this.speedY = props.speedY ?? 0
+    }
+
+    getNextposition () {
+        return {
+            x: this.x + this.speedX,
+            y: this.y + this.speedY,
+            width: this.width,
+            height: this.height,
+        }
+    }
+
+    update () {
+        this.x += this.speedX;
+        this.y += this.speedY;
     }
 
     draw (context) {
@@ -24,20 +40,6 @@ export default class Sprite extends DisplayObject {
             this.height,
         )
 
-        if (this.debug) {
-            context.beginPath()
-            context.rect(this.x, this.y, this.width, this.height)
-            context.fillStyle = 'rgba(0, 255, 0, 0.3)'
-            context.fill()
-
-            context.beginPath()
-            context.rect(this.x, this.y, this.width, this.height)
-            context.strokeStyle = 'green'
-            context.stroke()
-        }
-    }
-
-    update () {
-
+        super.draw(context)
     }
 }
