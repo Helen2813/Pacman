@@ -28,7 +28,7 @@ export function haveCollision (a, b) {
     return false;
 };
 
-export function getRandomFrom (array) {
+export function getRandomFrom (...array) {
     const index = Math.floor(Math.random() * array.length)
 
     return array[index];

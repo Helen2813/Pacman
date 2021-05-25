@@ -1,6 +1,7 @@
 import DisplayObject from "./DisplayObject.js";
 
 export default class Sprite extends DisplayObject {
+    play = true;
     constructor(props = {}) {
         super(props);
 
@@ -26,20 +27,21 @@ export default class Sprite extends DisplayObject {
     }
 
     draw (context) {
-        context.drawImage(
-            this.image,
+        if (this.frame) {
+            context.drawImage(
+                this.image,
 
-            this.frame.x,
-            this.frame.y,
-            this.frame.width,
-            this.frame.height,
+                this.frame.x,
+                this.frame.y,
+                this.frame.width,
+                this.frame.height,
 
-            this.x,
-            this.y,
-            this.width,
-            this.height,
-        )
-
+                this.x,
+                this.y,
+                this.width,
+                this.height,
+            )
+        }
         super.draw(context)
     }
 }

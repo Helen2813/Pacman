@@ -6,7 +6,6 @@ import { getRandomFrom, haveCollision } from './Additional.js';
 import DisplayObject from "./DisplayObject.js";
 
 const scale = 2;
-const diractions = ['left', 'right', 'up', 'down'];
 
 export default async function main () {
     const game = new Game({
@@ -73,13 +72,29 @@ export default async function main () {
         y: wall.y * scale,
         width: wall.width * scale,
         height: wall.height * scale,
-        debug: true
-    }))
+        // debug: true
+    }));
+
+    const leftPortal = new DisplayObject({
+        x: atlas.position.leftPortal.x * scale,
+        y: atlas.position.leftPortal.y * scale,
+        width: atlas.position.leftPortal.width * scale,
+        height: atlas.position.leftPortal.height * scale,
+    });
+
+    const rightPortal = new DisplayObject({
+        x: atlas.position.rightPortal.x * scale,
+        y: atlas.position.rightPortal.y * scale,
+        width: atlas.position.rightPortal.width * scale,
+        height: atlas.position.rightPortal.height * scale,
+    });
 
     game.stage.add(pacman);
     game.canvas.width = maze.width;
     game.canvas.height = maze.height;
     game.stage.add(maze);
+    game.stage.add(leftPortal);
+    game.stage.add(rightPortal);
     foods.forEach(food => game.stage.add(food));
     ghosts.forEach(ghost => game.stage.add(ghost));
     walls.forEach(wall => game.stage.add(wall));
@@ -106,8 +121,27 @@ export default async function main () {
             }
 
             if (ghost.speedX === 0 && ghost.speedY === 0) {
-                const posibleDirections = diractions.filter(direction => direction !== ghost.animation.name);
-                ghost.nextDirection = getRandomFrom(posibleDirections);
+                if (ghost.animation.name === 'up') {
+                    ghost.nextDirection = getRandomFrom('left', 'right', 'down');
+                } else if (ghost.animation.name === 'down') {
+                    ghost.nextDirection = getRandomFrom('left', 'right', 'up');
+                } else if (ghost.animation.name === 'right') {
+                    ghost.nextDirection = getRandomFrom('left', 'down', 'up');
+                } else if (ghost.animation.name === 'left') {
+                    ghost.nextDirection = getRandomFrom('right', 'down', 'up');
+                }
+            }
+
+            if (pacman.play && haveCollision(pacman, ghost)) {
+                pacman.speedY = 0;
+                pacman.speedX = 0;
+                pacman.start('die', {
+                    onEnd () {
+                        pacman.play = false;
+                        pacman.stop();
+                        game.stage.remove(pacman);
+                    }
+                });
             }
         }
 
@@ -118,9 +152,19 @@ export default async function main () {
             pacman.speedX = 0;
             pacman.speedY = 0;
         }
+
+        if (haveCollision(pacman, leftPortal)) {
+            pacman.x = atlas.position.rightPortal.x * scale - pacman.width - 1;
+        }
+
+        if (haveCollision(pacman, rightPortal)) {
+            pacman.x = atlas.position.leftPortal.x * scale + pacman.width + 1;
+        }
     }
 
     document.addEventListener('keydown', event => {
+        if (!pacman.play) return;
+
         if (event.key === 'ArrowLeft') {
             pacman.nextDirection = 'left';
         } else if (event.key === 'ArrowRight') {
