@@ -31,7 +31,6 @@ export default class Cinematic extends Sprite {
     }
 
     stop () {
-        console.log('stop')
         this.animation = null;
         this.cooldown = 0;
         this.timer = 0;
