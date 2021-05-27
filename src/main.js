@@ -89,6 +89,16 @@ export default async function main () {
         height: atlas.position.rightPortal.height * scale,
     });
 
+    const tablets = atlas.position.tablets
+        .map(tablet => new Sprite({
+            image,
+            frame: atlas.tablet,
+            x: tablet.x * scale,
+            y: tablet.y * scale,
+            width: tablet.width * scale,
+            height: tablet.height * scale,
+        }));
+
     game.stage.add(pacman);
     game.canvas.width = maze.width;
     game.canvas.height = maze.height;
@@ -98,6 +108,7 @@ export default async function main () {
     foods.forEach(food => game.stage.add(food));
     ghosts.forEach(ghost => game.stage.add(ghost));
     walls.forEach(wall => game.stage.add(wall));
+    tablets.forEach(tablet => game.stage.add(tablet));
 
     game.update = () => {
         const eated = [];
@@ -112,12 +123,12 @@ export default async function main () {
         changeDirection(pacman);
         ghosts.forEach(changeDirection);
 
-        for (const ghost of ghosts) {
+        for (let ghost of ghosts) {
             const wall = getWallCollision(ghost.getNextposition());
 
             if (wall) {
-                ghost.speedX = 0;
-                ghost.speedY = 0;
+               ghost.speedX = 0;
+               ghost.speedY = 0;
             }
 
             if (ghost.speedX === 0 && ghost.speedY === 0) {
@@ -133,17 +144,18 @@ export default async function main () {
             }
 
             if (pacman.play && haveCollision(pacman, ghost)) {
-                pacman.speedY = 0;
-                pacman.speedX = 0;
-                pacman.start('die', {
-                    onEnd () {
-                        pacman.play = false;
-                        pacman.stop();
-                        game.stage.remove(pacman);
-                    }
-                });
+                    pacman.speedY = 0;
+                    pacman.speedX = 0;
+                    pacman.start('die', {
+                        onEnd () {
+                            pacman.play = false;
+                            pacman.stop();
+                            game.stage.remove(pacman);
+                        }
+                    });
             }
         }
+    // }
 
         const wall = getWallCollision(pacman.getNextposition());
 
