@@ -12,7 +12,7 @@ const scale = 2.7;
 export default async function main () {
     const game = new Game({
         background: 'black',
-        width: 610,
+        width: 620,
         height: 800,
     });
 
@@ -185,13 +185,13 @@ export default async function main () {
                         }
                     });
                 }
-            }
-            if (haveCollision(ghost, leftPortal)) {
-                ghost.x = atlas.position.rightPortal.x * scale - ghost.width - 1;
-            }
+                if (haveCollision(ghost, leftPortal)) {
+                    ghost.x = atlas.position.rightPortal.x * scale - ghost.width - 1;
+                }
 
-            if (haveCollision(ghost, rightPortal)) {
-                ghost.x = atlas.position.leftPortal.x * scale + ghost.width + 1;
+                if (haveCollision(ghost, rightPortal)) {
+                    ghost.x = atlas.position.leftPortal.x * scale + ghost.width + 1;
+                }
             }
         }
 
