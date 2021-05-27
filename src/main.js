@@ -4,13 +4,31 @@ import { loadImage, loadJSON } from "./Loader.js";
 import Cinematic from "./Cinematic.js";
 import { getRandomFrom, haveCollision } from './Additional.js';
 import DisplayObject from "./DisplayObject.js";
+import Group from "./Group.js";
+import PointsText from "./Text.js";
 
-const scale = 2;
+const scale = 2.7;
 
 export default async function main () {
     const game = new Game({
         background: 'black',
-    })
+        width: 610,
+        height: 800,
+    });
+
+    const party = new Group();
+    party.offsetY = 50;
+    game.stage.add(party);
+
+    const state = new PointsText({
+        x: game.canvas.width / 2,
+        y: -5 * scale,
+        content: '0 points',
+        fill: 'white',
+    });
+    state.points = 0;
+
+    party.add(state);
 
     document.body.append(game.canvas)
 
@@ -63,6 +81,7 @@ export default async function main () {
             })
             ghost.start(atlas.position[color].direction);
             ghost.nextDirection = atlas.position[color].direction;
+            ghost.isBlue = false;
 
             return ghost;
         })
@@ -99,23 +118,23 @@ export default async function main () {
             height: tablet.height * scale,
         }));
 
-    game.stage.add(pacman);
-    game.canvas.width = maze.width;
-    game.canvas.height = maze.height;
-    game.stage.add(maze);
-    game.stage.add(leftPortal);
-    game.stage.add(rightPortal);
-    foods.forEach(food => game.stage.add(food));
-    ghosts.forEach(ghost => game.stage.add(ghost));
-    walls.forEach(wall => game.stage.add(wall));
-    tablets.forEach(tablet => game.stage.add(tablet));
+    party.add(pacman);
+    party.add(maze);
+    party.add(leftPortal);
+    party.add(rightPortal);
+    foods.forEach(food => party.add(food));
+    ghosts.forEach(ghost => party.add(ghost));
+    walls.forEach(wall => party.add(wall));
+    tablets.forEach(tablet => party.add(tablet));
 
     game.update = () => {
         const eated = [];
         for (const food of foods) {
             if (haveCollision(pacman, food)) {
                 eated.push(food);
-                game.stage.remove(food);
+                party.remove(food);
+                state.points += 100;
+                state.content = `${state.points} points`;
             }
         }
         foods = foods.filter(food => !eated.includes(food));
@@ -124,6 +143,8 @@ export default async function main () {
         ghosts.forEach(changeDirection);
 
         for (let ghost of ghosts) {
+            if (!ghost.play) return;
+
             const wall = getWallCollision(ghost.getNextposition());
 
             if (wall) {
@@ -143,19 +164,36 @@ export default async function main () {
                 }
             }
 
-            if (pacman.play && haveCollision(pacman, ghost)) {
+            if (pacman.play && ghost.play && haveCollision(pacman, ghost)) {
+                if (ghost.isBlue) {
+                    ghost.play = false;
+                    ghost.speedY = 0;
+                    ghost.speedX = 0;
+                    party.remove(ghost);
+                    ghosts.splice(ghosts.indexOf(ghost), 1);
+
+                    state.points += 5000;
+                    state.content = `${state.points} points`;
+                } else {
                     pacman.speedY = 0;
                     pacman.speedX = 0;
                     pacman.start('die', {
                         onEnd () {
                             pacman.play = false;
                             pacman.stop();
-                            game.stage.remove(pacman);
+                            party.remove(pacman);
                         }
                     });
+                }
+            }
+            if (haveCollision(ghost, leftPortal)) {
+                ghost.x = atlas.position.rightPortal.x * scale - ghost.width - 1;
+            }
+
+            if (haveCollision(ghost, rightPortal)) {
+                ghost.x = atlas.position.leftPortal.x * scale + ghost.width + 1;
             }
         }
-    // }
 
         const wall = getWallCollision(pacman.getNextposition());
 
@@ -178,12 +216,22 @@ export default async function main () {
 
             if (haveCollision(pacman, tablet)) {
                 tablets.splice(i, 1);
-                game.stage.remove(tablet);
+                party.remove(tablet);
 
                 ghosts.forEach(ghost => {
+                    ghost.originalAnimations = ghost.animations;
                     ghost.animations = atlas.blueGhost;
+                    ghost.isBlue = true;
                     ghost.start(ghost.animation.name);
                 })
+
+                setTimeout(() => {
+                    ghosts.forEach(ghost => {
+                        ghost.animations = ghost.originalAnimations;
+                        ghost.isBlue = false;
+                        ghost.start(ghost.animation.name);
+                    })
+                }, 5000);
                 break;
             }
         }
