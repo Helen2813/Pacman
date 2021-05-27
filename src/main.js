@@ -89,7 +89,7 @@ export default async function main () {
         height: atlas.position.rightPortal.height * scale,
     });
 
-    const tablets = atlas.position.tablets
+    let tablets = atlas.position.tablets
         .map(tablet => new Sprite({
             image,
             frame: atlas.tablet,
@@ -171,6 +171,21 @@ export default async function main () {
 
         if (haveCollision(pacman, rightPortal)) {
             pacman.x = atlas.position.leftPortal.x * scale + pacman.width + 1;
+        }
+
+        for (let i = 0; i < tablets.length; i++) {
+            const tablet = tablets[i];
+
+            if (haveCollision(pacman, tablet)) {
+                tablets.splice(i, 1);
+                game.stage.remove(tablet);
+
+                ghosts.forEach(ghost => {
+                    ghost.animations = atlas.blueGhost;
+                    ghost.start(ghost.animation.name);
+                })
+                break;
+            }
         }
     }
 
